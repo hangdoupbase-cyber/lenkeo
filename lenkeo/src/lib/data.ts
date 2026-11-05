@@ -110,6 +110,13 @@ export function suggestVenues(originAreas: string[], purpose: Purpose, limit = 5
     .map((v) => ({ venue: v, km: distanceKm(mid.lat, mid.lng, v.lat, v.lng) }))
     .sort((a, b) => a.km - b.km);
   let list = ranked.slice(0, limit);
+  if (purpose === "an-cafe") {
+    // Ăn xong đi cà phê: lấy cả quán ăn lẫn quán cà phê gần điểm giữa
+    const nAn = Math.ceil(limit / 2);
+    const an = ranked.filter((r) => r.venue.kind === "an").slice(0, nAn);
+    const cafe = ranked.filter((r) => r.venue.kind === "cafe").slice(0, limit - an.length);
+    list = [...an, ...cafe];
+  }
   if (pinned && !list.some((r) => r.venue.slug === pinned)) {
     const p = ranked.find((r) => r.venue.slug === pinned);
     if (p) list = [p, ...list.slice(0, limit - 1)];
