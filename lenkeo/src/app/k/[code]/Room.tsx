@@ -205,29 +205,35 @@ export default function Room({ code }: { code: string }) {
     const going = people.filter((x) => x.slots.includes(event.final_slot!));
     return (
       <div className="mx-auto max-w-xl px-4 py-10">
-        <div className="overflow-hidden rounded-[2rem] border-2 border-ink bg-sun p-1.5 shadow-[6px_6px_0_0_var(--ink)]">
-          <div className="rounded-[1.6rem] border-2 border-ink bg-card p-7">
-            <p className="sticker">🎉 Chốt kèo rồi nha!</p>
-            <h1 className="mt-4 text-3xl font-extrabold">{event.title}</h1>
-            <p className="mt-5 text-sm text-muted">Khi nào</p>
-            <p className="text-2xl font-bold text-brand">{slotLabel(event.final_slot)}</p>
-            <p className="mt-4 text-sm text-muted">Ở đâu</p>
-            <p className="text-xl font-bold">{v.name}</p>
-            <p className="text-muted">{v.address}</p>
-            <p className="mt-4 text-sm text-muted">Ai đi ({going.length})</p>
+        <div className="receipt">
+          <div className="px-7 pb-2 pt-8 text-center">
+            <p className="display text-2xl">Lên kèo</p>
+            <p className="mono mt-1 text-xs text-muted">HÓA ĐƠN KÈO · ĐÃ CHỐT</p>
+          </div>
+          <div className="px-7 pb-6">
+            <h1 className="display mt-3 text-center text-3xl">{event.title}</h1>
+            <div className="mono mt-6 space-y-2 text-sm">
+              <div className="flex items-baseline gap-2"><span className="text-muted">Khi nào</span><span className="leader" /><span className="font-semibold">{slotLabel(event.final_slot)}</span></div>
+              <div className="flex items-baseline gap-2"><span className="text-muted">Ở đâu</span><span className="leader" /><span className="text-right font-semibold">{v.name}</span></div>
+              <div className="flex items-baseline gap-2"><span className="text-muted">Số người</span><span className="leader" /><span className="font-semibold">{going.length || people.length}</span></div>
+            </div>
+            <p className="mono mt-2 text-xs text-muted">{v.address}</p>
+          </div>
+          <div className="receipt-cut p-7">
+            <p className="mono text-xs text-muted">AI ĐI</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {(going.length ? going : people).map((x) => (
-                <span key={x.id} className="chip">
+                <span key={x.id} className="chip !text-ink">
                   {x.name}
                 </span>
               ))}
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <a href={maps} target="_blank" rel="noopener" className="btn-ghost">
-                📍 Chỉ đường
+                Chỉ đường
               </a>
               <a href={cal} target="_blank" rel="noopener" className="btn-ghost">
-                📅 Thêm lịch
+                Thêm lịch
               </a>
             </div>
             <button onClick={share} className="btn-primary mt-3 w-full">
@@ -252,7 +258,7 @@ export default function Room({ code }: { code: string }) {
       <div className="mx-auto max-w-xl px-4 py-10">
         <div className="card p-7">
           <p className="chip">Bạn được mời vào kèo</p>
-          <h1 className="mt-3 text-3xl font-extrabold">{event.title}</h1>
+          <h1 className="display mt-3 text-4xl">{event.title}</h1>
           <p className="mt-1 text-muted">
             {purposeLabel} · {event.dates.map(dayLabel).join(", ")}
           </p>
@@ -300,7 +306,7 @@ export default function Room({ code }: { code: string }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-brand">{purposeLabel}</p>
-          <h1 className="text-3xl font-extrabold">{event.title}</h1>
+          <h1 className="display text-3xl">{event.title}</h1>
           <p className="mt-1 text-sm text-muted">Chào {me.name} 👋{isHost ? " · Bạn là chủ kèo" : ""}</p>
         </div>
         <button onClick={share} className="btn-ghost shrink-0 !px-4 !py-2 text-sm">
@@ -371,8 +377,8 @@ export default function Room({ code }: { code: string }) {
                             onClick={() => !past && toggleSlot(s)}
                             disabled={past}
                             title={past ? "Buổi này đã qua" : undefined}
-                            className={`h-14 w-full rounded-2xl border-2 font-extrabold transition ${past ? "cursor-not-allowed border-dashed border-line opacity-40" : mine ? "border-ink shadow-[2px_2px_0_0_var(--ink)]" : "border-transparent hover:border-ink"} ${s === bestSlot ? "ring-2 ring-lime ring-offset-2" : ""}`}
-                            style={past ? { background: "transparent" } : { background: `rgba(255,90,31,${0.08 + heat * 0.8})`, color: heat > 0.5 ? "white" : undefined }}
+                            className={`h-14 w-full rounded-2xl border-2 font-extrabold transition ${past ? "cursor-not-allowed border-dashed border-line opacity-40" : mine ? "border-ink" : "border-transparent hover:border-edge"} ${s === bestSlot ? "ring-2 ring-lime ring-offset-2" : ""}`}
+                            style={past ? { background: "transparent" } : { background: `rgba(180,83,44,${0.08 + heat * 0.7})`, color: heat > 0.3 ? "white" : undefined }}
                           >
                             {past ? "–" : c || ""}
                             {mine && !past && <span className="pop ml-1 text-xs">✓</span>}
@@ -386,7 +392,7 @@ export default function Room({ code }: { code: string }) {
             </table>
           </div>
           {bestSlot && (
-            <p className="mt-3 rounded-2xl border-2 border-ink bg-lime-soft px-4 py-3 text-sm">
+            <p className="mt-3 rounded-2xl border border-edge bg-lime-soft px-4 py-3 text-sm">
               ⭐ Nhiều người rảnh nhất: <b>{slotLabel(bestSlot)}</b> ({slotCount(bestSlot)} người)
             </p>
           )}

@@ -1,13 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #fff8f1;
-  --card: #ffffff;
-  --ink: #2b1d16;
-  --muted: #7a6255;
-  --line: #f0e2d6;
-  --brand: #f05a28;
-  --brand-soft: #ffe7dc;
+  --bg: #f4ece0;
+  --card: #fffaf1;
+  --ink: #36271e;
+  --muted: #86725f;
+  --line: #e6d8c4;
+  --edge: #d6c3a8;
+  --brand: #b4532c;
+  --brand-soft: #f3dfd0;
+  --pink: #d68a73;
+  --pink-soft: #f6e0d8;
+  --lime: #73865a;
+  --lime-soft: #e5ead7;
+  --violet: #8d7b8f;
+  --violet-soft: #eadfe6;
+  --sun: #d9a441;
+  --sun-soft: #f7e8c3;
 }
 
 @theme inline {
@@ -16,41 +25,102 @@
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-edge: var(--edge);
   --color-brand: var(--brand);
   --color-brand-soft: var(--brand-soft);
+  --color-pink: var(--pink);
+  --color-lime: var(--lime);
+  --color-violet: var(--violet);
+  --color-sun: var(--sun);
+  --color-pink-soft: var(--pink-soft);
+  --color-lime-soft: var(--lime-soft);
+  --color-violet-soft: var(--violet-soft);
+  --color-sun-soft: var(--sun-soft);
   --font-sans: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1a1310;
-    --card: #241a15;
-    --ink: #f7ece4;
-    --muted: #c2a898;
-    --line: #3a2b23;
-    --brand: #ff7a4a;
-    --brand-soft: #3d2419;
-  }
+  --font-serif: "Fraunces Variable", Georgia, "Times New Roman", serif;
 }
 
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(900px 500px at 100% -10%, rgba(217, 164, 65, 0.16), transparent 60%),
+    radial-gradient(700px 500px at -10% 30%, rgba(115, 134, 90, 0.12), transparent 60%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-sans);
 }
 
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .15  0 0 0 .22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.display {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-variation-settings: "SOFT" 100, "WONK" 1;
+}
+.neon {
+  color: var(--brand);
+  font-style: italic;
+}
+.lime {
+  color: var(--lime);
+}
+.marker {
+  background: linear-gradient(transparent 62%, rgba(217, 164, 65, 0.45) 62% 94%, transparent 94%);
+}
 .btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold transition active:scale-95 bg-brand text-white shadow-sm hover:brightness-110;
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 font-semibold text-bg transition hover:bg-brand active:scale-[0.98] disabled:opacity-40;
 }
 .btn-ghost {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold transition active:scale-95 border border-line bg-card text-ink hover:border-brand;
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-edge bg-card/60 px-6 py-3 font-semibold text-ink transition hover:border-ink;
 }
 .card {
-  @apply rounded-3xl border border-line bg-card;
+  @apply rounded-3xl border border-line bg-card shadow-[0_1px_0_rgba(54,39,30,0.04),0_10px_30px_-18px_rgba(54,39,30,0.35)] transition;
 }
 .chip {
-  @apply inline-flex items-center rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-ink;
+  @apply inline-flex items-center rounded-full bg-sun-soft/70 px-3 py-1 text-xs font-medium text-ink/80;
 }
 .input {
-  @apply w-full rounded-2xl border border-line bg-card px-4 py-3 text-ink outline-none focus:border-brand;
+  @apply w-full rounded-2xl border border-edge bg-card px-4 py-3 text-ink outline-none placeholder:text-muted focus:border-brand focus:shadow-[0_0_0_3px_rgba(180,83,44,0.15)];
 }
+.sticker {
+  @apply inline-flex items-center gap-1.5 rounded-full border border-edge bg-card/70 px-3 py-1 text-xs font-medium text-muted;
+}
+.receipt {
+  position: relative;
+  background: #fffdf7;
+  border: 1px solid var(--line);
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 24px 40px -24px rgba(54, 39, 30, 0.45);
+  padding-bottom: 14px;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom/16px 100% repeat-x;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom/16px 100% repeat-x;
+}
+.receipt-cut {
+  border-top: 1.5px dashed var(--edge);
+}
+.mono {
+  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  letter-spacing: 0.02em;
+}
+.leader {
+  flex: 1;
+  border-bottom: 1.5px dotted var(--edge);
+  transform: translateY(-4px);
+  min-width: 12px;
+}
+@keyframes pop {
+  0% { transform: scale(0.94); }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.pop { animation: pop 0.25s ease-out; }

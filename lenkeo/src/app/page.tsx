@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeroArt, Squiggle } from "@/components/Doodles";
 import VenueCard from "@/components/VenueCard";
 import { VENUES, areasWithVenues, venuesInArea } from "@/lib/data";
 
@@ -12,25 +13,27 @@ export default function Home() {
   const featured = [VENUES[3], VENUES[1], VENUES[20], VENUES[9], VENUES[5], VENUES[18]].filter(Boolean);
   return (
     <>
-      <section className="mx-auto max-w-5xl px-4 pb-10 pt-12 sm:pt-20">
-        <span className="chip">Hà Nội · Miễn phí · Không cần đăng ký</span>
-        <h1 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl">
-          Lên kèo nhóm bạn
+      <section className="relative mx-auto max-w-5xl px-4 pb-12 pt-12 sm:pt-20">
+        <HeroArt className="pointer-events-none absolute -right-6 top-6 hidden w-[420px] text-brand/70 sm:block" />
+        <span className="sticker">Hà Nội · Miễn phí · Không cần đăng ký</span>
+        <h1 className="display mt-5 text-5xl sm:text-7xl">
+          Rủ nhau đi chơi,
           <br />
-          <span className="text-brand">chốt trong 1 phút.</span>
+          <span className="neon">chốt một phút</span> thôi.
         </h1>
         <p className="mt-5 max-w-xl text-lg text-muted">
-          Hết cảnh hỏi &quot;ai rảnh?&quot; cả ngày trong nhóm chat. Tạo kèo, gửi link, mọi người chọn giờ rảnh và vote
-          quán ở khoảng giữa. Xong.
+          Hết cảnh &quot;ai rảnh?&quot; &quot;đi đâu?&quot; &quot;tuỳ&quot; cả ngày trong nhóm chat. Tạo kèo, gửi link, mọi người tick giờ rảnh và vote quán ở khoảng giữa. Xong, rủ nhau đi làm ly cà phê hay bữa ăn ngon thôi.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/tao-keo" className="btn-primary text-lg">
-            Tạo kèo ngay →
+            Tạo kèo ngay
           </Link>
           <Link href="/quan" className="btn-ghost text-lg">
-            Xem quán hot
+            Xem quán
           </Link>
         </div>
+        <HeroArt className="mt-10 w-full max-w-sm text-brand/70 sm:hidden" />
+        <Squiggle className="mt-10 h-3 w-40 text-edge" />
       </section>
 
       <section className="mx-auto max-w-5xl px-4 py-8">
@@ -41,10 +44,10 @@ export default function Home() {
             ["3", "Vote & chốt", "Web gợi ý quán ở giữa, cả nhóm vote realtime, chủ kèo bấm chốt."],
           ].map(([n, t, d]) => (
             <div key={n} className="card p-6">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-lg font-bold text-white">
+              <span className="display text-4xl neon">
                 {n}
               </span>
-              <h2 className="mt-4 text-lg font-bold">{t}</h2>
+              <h2 className="display mt-3 text-xl">{t}</h2>
               <p className="mt-2 text-sm text-muted">{d}</p>
             </div>
           ))}
@@ -53,7 +56,7 @@ export default function Home() {
 
       <section className="mx-auto max-w-5xl px-4 py-10">
         <div className="flex items-end justify-between">
-          <h2 className="text-2xl font-extrabold">Quán đang hot cho nhóm</h2>
+          <h2 className="display text-3xl">Quán <span className="neon">gợi ý</span> cho nhóm</h2>
           <Link href="/quan" className="text-sm font-semibold text-brand">
             Xem tất cả →
           </Link>
@@ -66,7 +69,7 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-5xl px-4 py-6">
-        <h2 className="text-2xl font-extrabold">Tìm quán theo khu vực</h2>
+        <h2 className="display text-3xl">Tìm quán theo khu vực</h2>
         <div className="mt-4 flex flex-wrap gap-3">
           {areasWithVenues().map((a) => (
             <Link key={a.slug} href={`/quan/${a.slug}`} className="btn-ghost">
@@ -77,7 +80,7 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-5xl px-4 py-10">
-        <h2 className="text-2xl font-extrabold">Câu hỏi thường gặp</h2>
+        <h2 className="display text-3xl">Câu hỏi thường gặp</h2>
         <div className="mt-4 space-y-3">
           {faq.map((f) => (
             <details key={f.q} className="card p-5">
