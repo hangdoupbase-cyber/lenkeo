@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { AREAS, PERIODS, PURPOSES, areaBySlug, suggestVenues, venueBySlug } from "@/lib/data";
+import { AREAS, PERIODS, PURPOSES, areaBySlug, directionsUrl, mapsUrl, suggestVenues, venueBySlug } from "@/lib/data";
 import {
   deviceToken,
   hostTokenFor,
@@ -31,6 +31,14 @@ const slotLabel = (slot: string) => {
   const [d, p] = slot.split("|");
   return `${periodLabel(p)} ${dayLabel(d)}`;
 };
+// Buổi đã qua: ngày trước hôm nay, hoặc hôm nay nhưng buổi đã kết thúc
+const PERIOD_END_HOUR: Record<string, number> = { trua: 14, chieu: 17, toi: 24 };
+const isPastSlot = (slot: string) => {
+  const [d, p] = slot.split("|");
+  const [y, m, day] = d.split("-").map(Number);
+  const end = new Date(y, m - 1, day, PERIOD_END_HOUR[p] ?? 24, 0, 0);
+  return end.getTime() <= Date.now();
+};
 const PERIOD_TIME: Record<string, [string, string]> = { trua: ["113000", "133000"], chieu: ["150000", "170000"], toi: ["190000", "213000"] };
 
 type Tab = "gio" | "quan" | "ai";
@@ -38,6 +46,7 @@ type Tab = "gio" | "quan" | "ai";
 export default function Room({ code }: { code: string }) {
   const params = useSearchParams();
   const [event, setEvent] = useState<EventRow | null>(null);
+  const [shown, setShown] = useState(5);
   const [people, setPeople] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [device, setDevice] = useState("");
@@ -82,6 +91,7 @@ export default function Room({ code }: { code: string }) {
     let best = "";
     let n = 0;
     slots.forEach((s) => {
+      if (isPastSlot(s)) return;
       const c = people.filter((p) => p.slots.includes(s)).length;
       if (c > n) {
         n = c;
@@ -93,8 +103,8 @@ export default function Room({ code }: { code: string }) {
 
   const origins = people.map((p) => p.area).filter(Boolean) as string[];
   const { mid, list: suggestions } = useMemo(
-    () => suggestVenues(origins, event?.purpose ?? "an", 5, event?.seed_venue ?? undefined),
-    [origins.join(","), event?.purpose, event?.seed_venue] // eslint-disable-line react-hooks/exhaustive-deps
+    () => suggestVenues(origins, event?.purpose ?? "an", shown, event?.seed_venue ?? undefined),
+    [origins.join(","), event?.purpose, event?.seed_venue, shown] // eslint-disable-line react-hooks/exhaustive-deps
   );
   const pins: Pin[] = useMemo(() => {
     const jit = (id: string, k: number) => ((id.charCodeAt(k) % 10) - 5) * 0.0008;
@@ -159,7 +169,15 @@ export default function Room({ code }: { code: string }) {
     flash("Đã copy lời nhắc!");
   }
 
-  if (loading) return <div className="mx-auto max-w-3xl px-4 py-10"><div className="card h-96 animate-pulse" /></div>;
+  if (loading)
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10">
+        <p className="sticker">⏳ Đang mở kèo…</p>
+        <div className="mt-4 h-9 w-2/3 animate-pulse rounded-2xl bg-line" />
+        <div className="card mt-5 h-24 animate-pulse" />
+        <div className="card mt-4 h-72 animate-pulse" />
+      </div>
+    );
   if (!event)
     return (
       <div className="mx-auto max-w-xl px-4 py-20 text-center">
@@ -183,13 +201,13 @@ export default function Room({ code }: { code: string }) {
     const [st, en] = PERIOD_TIME[p] ?? ["190000", "210000"];
     const ymd = d.replaceAll("-", "");
     const cal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${ymd}T${st}/${ymd}T${en}&ctz=Asia/Ho_Chi_Minh&location=${encodeURIComponent(`${v.name}, ${v.address}, Hà Nội`)}&details=${encodeURIComponent(link)}`;
-    const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${v.name} ${v.address} Hà Nội`)}`;
+    const maps = directionsUrl(v);
     const going = people.filter((x) => x.slots.includes(event.final_slot!));
     return (
       <div className="mx-auto max-w-xl px-4 py-10">
-        <div className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand to-orange-400 p-1 shadow-xl">
-          <div className="rounded-[1.8rem] bg-card p-7">
-            <p className="chip">✅ Đã chốt kèo</p>
+        <div className="overflow-hidden rounded-[2rem] border-2 border-ink bg-sun p-1.5 shadow-[6px_6px_0_0_var(--ink)]">
+          <div className="rounded-[1.6rem] border-2 border-ink bg-card p-7">
+            <p className="sticker">🎉 Chốt kèo rồi nha!</p>
             <h1 className="mt-4 text-3xl font-extrabold">{event.title}</h1>
             <p className="mt-5 text-sm text-muted">Khi nào</p>
             <p className="text-2xl font-bold text-brand">{slotLabel(event.final_slot)}</p>
@@ -346,15 +364,18 @@ export default function Room({ code }: { code: string }) {
                       const mine = me.slots.includes(s);
                       const c = slotCount(s);
                       const heat = people.length ? c / people.length : 0;
+                      const past = isPastSlot(s);
                       return (
                         <td key={s}>
                           <button
-                            onClick={() => toggleSlot(s)}
-                            className={`h-14 w-full rounded-2xl border-2 font-bold transition ${mine ? "border-brand" : "border-transparent"} ${s === bestSlot ? "ring-2 ring-green-500" : ""}`}
-                            style={{ background: `rgba(240,90,40,${0.08 + heat * 0.75})`, color: heat > 0.5 ? "white" : undefined }}
+                            onClick={() => !past && toggleSlot(s)}
+                            disabled={past}
+                            title={past ? "Buổi này đã qua" : undefined}
+                            className={`h-14 w-full rounded-2xl border-2 font-extrabold transition ${past ? "cursor-not-allowed border-dashed border-line opacity-40" : mine ? "border-ink shadow-[2px_2px_0_0_var(--ink)]" : "border-transparent hover:border-ink"} ${s === bestSlot ? "ring-2 ring-lime ring-offset-2" : ""}`}
+                            style={past ? { background: "transparent" } : { background: `rgba(255,90,31,${0.08 + heat * 0.8})`, color: heat > 0.5 ? "white" : undefined }}
                           >
-                            {c || ""}
-                            {mine && <span className="ml-1 text-xs">✓</span>}
+                            {past ? "–" : c || ""}
+                            {mine && !past && <span className="pop ml-1 text-xs">✓</span>}
                           </button>
                         </td>
                       );
@@ -365,7 +386,7 @@ export default function Room({ code }: { code: string }) {
             </table>
           </div>
           {bestSlot && (
-            <p className="mt-3 rounded-2xl bg-green-500/10 px-4 py-3 text-sm">
+            <p className="mt-3 rounded-2xl border-2 border-ink bg-lime-soft px-4 py-3 text-sm">
               ⭐ Nhiều người rảnh nhất: <b>{slotLabel(bestSlot)}</b> ({slotCount(bestSlot)} người)
             </p>
           )}
@@ -405,6 +426,9 @@ export default function Room({ code }: { code: string }) {
                     <p className="truncate text-sm text-muted">
                       {v.address} · cách điểm giữa {km.toFixed(1)} km
                     </p>
+                    <a href={mapsUrl(v)} target="_blank" rel="noopener" className="mt-1 inline-block text-xs font-bold text-brand underline">
+                      📍 Xem trên Google Maps
+                    </a>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {v.price && <span className="chip">{v.price}</span>}
                       {event.seed_venue === v.slug && <span className="chip">Chủ kèo đề xuất</span>}
@@ -421,6 +445,11 @@ export default function Room({ code }: { code: string }) {
                 </div>
               );
             })}
+            {suggestions.length >= shown && shown < 30 && (
+              <button className="btn-ghost w-full" onClick={() => setShown((n) => n + 5)}>
+                👀 Xem thêm quán
+              </button>
+            )}
           </div>
         </section>
       )}
